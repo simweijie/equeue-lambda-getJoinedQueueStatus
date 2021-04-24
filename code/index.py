@@ -29,7 +29,7 @@ def handler(event, context):
     # Get your queue no and other details
     query = "SELECT q.status, q.queueNumber, q.branchId,b.name as branchName,b.addr as branchAddr,b.postal as branchPostal, c.id as clinicId, c.name as clinicName, q.customerId \
         FROM Queue q,Branch b,Clinic c \
-            WHERE customerId= 1 and q.branchId=b.id and b.clinicId=c.id and q.status='Q'".format(event['customerId'])  
+            WHERE customerId= '{}' and q.branchId=b.id and b.clinicId=c.id and q.status='Q'".format(event['customerId'])  
     cur.execute(query)
     connection.commit()
 ## Construct body of the response object
