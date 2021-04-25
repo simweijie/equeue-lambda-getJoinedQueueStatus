@@ -27,17 +27,16 @@ def handler(event, context):
     cur = connection.cursor()  
 ## Retrieve Data
     # Get your queue no and other details
-    query = "SELECT q.status, q.queueNumber, q.branchId,b.name as branchName,b.addr as branchAddr,b.postal as branchPostal, c.id as clinicId, c.name as clinicName, q.customerId \
-        FROM Queue q,Branch b,Clinic c \
-            WHERE customerId='{}' and q.branchId=b.id and b.clinicId=c.id and (q.status='Q' or q.status='P' or q.status='D')".format(event['customerId'])  
+    query = "SELECT q.status, q.queueNumber, q.branchId,b.name as branchName,b.addr as branchAddr,b.postal as branchPostal, c.id as clinicId, c.name as clinicName, q.customerId FROM Queue q,Branch b,Clinic c WHERE customerId='{}' and q.branchId=b.id and b.clinicId=c.id and (q.status='Q' or q.status='P' or q.status='D')".format(event['customerId'])  
     cur.execute(query)
     connection.commit()
     if cur.rowcount > 0:
 ## Construct body of the response object
-        transactionResponse = {}
+        branchQueue = []
         rows = cur.fetchall()
         branchId = 0
         for row in rows:
+            transactionResponse = {}
             print("TEST {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8]))
             transactionResponse['status'] = row[0]
             transactionResponse['yourQueueNumber'] = row[1]
@@ -58,6 +57,7 @@ def handler(event, context):
             for row in rows:
                 print("current doctor queueNumber {0}".format(row[0]))
                 transactionResponse['currentQueueNumber']=row[0]
+                
         else:
             query="SELECT max(queueNumber) FROM Queue WHERE branchId={} and (status='C')".format(branchId)
             cur.execute(query)
@@ -66,14 +66,14 @@ def handler(event, context):
             for row in rows:
                 print("current completion queueNumber {0}".format(row[0]))
                 transactionResponse['currentQueueNumber']=row[0]
-
+        branchQueue.append(transactionResponse)
 # Construct http response object
     responseObject = {}
     # responseObject['statusCode'] = 200
     # responseObject['headers'] = {}
     # responseObject['headers']['Content-Type']='application/json'
     # responseObject['headers']['Access-Control-Allow-Origin']='*'
-    responseObject['data'] = json.dumps(transactionResponse, sort_keys=True,default=str)
+    responseObject['data'] = branchQueue
     
     #k = json.loads(responseObject['body'])
     #print(k['uin'])
