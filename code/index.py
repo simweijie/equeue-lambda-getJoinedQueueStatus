@@ -30,9 +30,9 @@ def handler(event, context):
     query = "SELECT q.status, q.queueNumber, q.branchId,b.name as branchName,b.addr as branchAddr,b.postal as branchPostal, c.id as clinicId, c.name as clinicName, q.customerId FROM Queue q,Branch b,Clinic c WHERE customerId='{}' and q.branchId=b.id and b.clinicId=c.id and (q.status='Q' or q.status='P' or q.status='D')".format(event['customerId'])  
     cur.execute(query)
     connection.commit()
+    branchQueue = []
     if cur.rowcount > 0:
 ## Construct body of the response object
-        branchQueue = []
         rows = cur.fetchall()
         branchId = 0
         for row in rows:
